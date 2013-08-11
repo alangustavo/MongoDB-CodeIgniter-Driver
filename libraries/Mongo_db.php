@@ -453,9 +453,9 @@ class Mongo_db {
 	 		show_error("Nothing to insert into Mongo collection or insert is not an array", 500);
 	 	
 	 	try {
-	 		$this->db->{$collection}->insert($insert, array('safe' => TRUE));
-	 		if(isset($insert['_id']))
-	 			return($insert['_id']);
+	 		$this->db->{$collection}->insert($data, array('safe' => TRUE));
+	 		if(isset($data['_id']))
+	 			return($data['_id']);
 	 		else
 	 			return(FALSE);
 	 	} catch(MongoCursorException $e) {
@@ -670,8 +670,9 @@ class Mongo_db {
 			$options['persist'] = isset($this->persist_key) && !empty($this->persist_key) ? $this->persist_key : 'ci_mongo_persist';
 		endif;
 		try {
-			$this->connection = new Mongo($this->connection_string, $options);
-			$this->db = $this->connection->{$this->dbname};
+			$this->connection = new MongoClient($this->connection_string, $options);
+                        $dbname = trim($this->CI->config->item('mongo_db'));
+                        $this->db = $this->connection->$dbname;
 			return($this);	
 		} catch(MongoConnectionException $e) {
 			show_error("Unable to connect to MongoDB: {$e->getMessage()}", 500);
@@ -712,7 +713,7 @@ class Mongo_db {
 		endif;
 		
 		if(isset($this->port) && !empty($this->port)):
-			$connection_string .= "{$this->host}:{$this->port}";
+			$connection_string .= "{$this->host}:{$this->port}/{$this->dbname}";
 		else:
 			$connection_string .= "{$this->host}";
 		endif;
